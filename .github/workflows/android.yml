@@ -4,23 +4,34 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch:
-
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch: # manuelles Starten möglich
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
+      # Repository auschecken
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      # Java installieren
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
           distribution: temurin
           java-version: '17'
 
+      # Gradle installieren (falls Wrapper fehlt)
+      - name: Install Gradle
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gradle
+
+      # Cache für Gradle (optional, beschleunigt Builds)
       - name: Cache Gradle packages
         uses: actions/cache@v3
         with:
@@ -31,9 +42,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
+      # Build Debug APK
       - name: Build Debug APK
-        run: ./gradlew assembleDebug
+        run: gradle assembleDebug
 
+      # Upload Debug APK als Artefakt
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
         with:
