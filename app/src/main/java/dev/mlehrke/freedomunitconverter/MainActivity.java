@@ -61,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
         } else {
             // Kein Internet + keine lokalen Dateien
             webView.loadData(
-                    "Keine Internetverbindung und keine lokalen Daten verfügbar.",
+                    "Keine Internetverbindung und keine lokalen Daten verfügbar. Bitte die App initial mit dem Internet verbinden.",
                     "text/plain",
                     "UTF-8"
             );
