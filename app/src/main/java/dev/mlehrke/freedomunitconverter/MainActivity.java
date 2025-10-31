@@ -6,7 +6,6 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
-import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -35,6 +34,7 @@ public class MainActivity extends AppCompatActivity {
     private Button button;
 
     @SuppressLint("SetJavaScriptEnabled")
+    @SuppressWarnings("deprecation")
     @Override
     protected void onCreate(Bundle savedInstance) {
         super.onCreate(savedInstance);
