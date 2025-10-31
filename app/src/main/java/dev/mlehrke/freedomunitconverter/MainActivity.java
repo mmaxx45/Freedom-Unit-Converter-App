@@ -1,6 +1,7 @@
 package dev.mlehrke.freedomunitconverter;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -8,6 +9,9 @@ import android.os.Bundle;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -26,15 +30,19 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
 
     private WebView webView;
+    private Button button;
 
     @SuppressLint("SetJavaScriptEnabled")
     @Override
     protected void onCreate(Bundle savedInstance) {
         super.onCreate(savedInstance);
 
-        webView = new WebView(this);
-        setContentView(webView);
+        setContentView(R.layout.activity_main);
+        button = findViewById(R.id.activationButton);
 
+        webView = findViewById(R.id.webView);
+
+        webView.setLayerType(WebView.LAYER_TYPE_SOFTWARE, null);
         webView.getSettings().setJavaScriptEnabled(true);
         webView.getSettings().setDomStorageEnabled(true);
         webView.setWebViewClient(new WebViewClient());
@@ -43,29 +51,107 @@ public class MainActivity extends AppCompatActivity {
         webView.getSettings().setAllowFileAccessFromFileURLs(true);
 
         setupWebView();
+        if(!isPremiumActive()) {
+            setupButton();
+        } else {
+            button.setVisibility(Button.GONE);
+        }
+
+    }
+
+    private void setupButton() {
+        button.setOnClickListener(v -> {
+            final EditText input = new EditText(this);
+            input.setHint("Key eingeben");
+
+            new AlertDialog.Builder(this)
+                    .setTitle("Premium Key aktivieren")
+                    .setView(input)
+                    .setPositiveButton("OK", ((dialog, which) -> {
+                        String key = input.getText().toString().trim();
+
+                        if(!key.isEmpty()) {
+                            checkLicenseKey(key);
+                        } else {
+                            Toast.makeText(this, "Kein Key eingegeben", Toast.LENGTH_SHORT).show();
+                        }
+                        dialog.dismiss();
+                    }))
+                    .setNegativeButton("Abbrechen", ((dialog, which) -> dialog.cancel()))
+                    .show();
+        });
+    }
+
+    private void checkLicenseKey(String key) {
+
+        new Thread(() -> {
+            try {
+                URL url = new URL("https://fuc.mlehrke.dev/license.php?key="+key);
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                connection.setRequestMethod("GET");
+                connection.setConnectTimeout(5000);
+                connection.setReadTimeout(5000);
+
+                InputStream in = connection.getInputStream();
+                BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+                String response = reader.readLine().trim();
+                reader.close();
+                connection.disconnect();
+
+                runOnUiThread(() -> {
+                    if ("true".equalsIgnoreCase(response)) {
+                        Toast.makeText(this, "Key gültig! Premium aktiviert.", Toast.LENGTH_SHORT).show();
+
+                        button.setVisibility(Button.GONE); //remove button from UI
+
+                        getSharedPreferences("app_prefs", MODE_PRIVATE)
+                                .edit()
+                                .putString("premium_key", key)
+                                .apply();
+                    } else {
+                        Toast.makeText(this, "Key ungültig!", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }).start();
+
     }
 
     private void setupWebView() {
         File appDir = getFilesDir();
         File indexFile = new File(appDir, "index.html");
+        
+        boolean filesExist = indexFile.exists();
+        boolean premiumActive = isPremiumActive();
 
-        if (isNetworkAvailable()) {
-            // Wenn Internet da ist, alles runterladen
-            new Thread(() -> {
-                downloadAllFiles(); // lädt Dateien herunter
-                runOnUiThread(() -> webView.loadUrl("file://" + indexFile.getAbsolutePath()));
-            }).start();
-        } else if (indexFile.exists()) {
+        if(!filesExist || premiumActive) {
+            if (isNetworkAvailable()) {
+                // Wenn Internet da ist, alles runterladen
+                new Thread(() -> {
+                    downloadAllFiles(); // lädt Dateien herunter
+                    runOnUiThread(() -> webView.loadUrl("file://" + indexFile.getAbsolutePath()));
+                }).start();
+            }
+            else {
+                // Kein Internet + keine lokalen Dateien
+                webView.loadData(
+                        "Keine Internetverbindung und keine lokalen Daten verfügbar. Bitte die App initial mit dem Internet verbinden.",
+                        "text/plain",
+                        "UTF-8"
+                );
+            }
+        } else  {
             // Offline: lade die vorhandene index.html
             webView.loadUrl("file://" + indexFile.getAbsolutePath());
-        } else {
-            // Kein Internet + keine lokalen Dateien
-            webView.loadData(
-                    "Keine Internetverbindung und keine lokalen Daten verfügbar. Bitte die App initial mit dem Internet verbinden.",
-                    "text/plain",
-                    "UTF-8"
-            );
         }
+    }
+
+    private boolean isPremiumActive() {
+        String key = getSharedPreferences("app_prefs", MODE_PRIVATE)
+                .getString("premium_key", null);
+        return key != null && !key.isEmpty();
     }
 
 
