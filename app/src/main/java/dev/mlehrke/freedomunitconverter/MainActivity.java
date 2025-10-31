@@ -113,11 +113,11 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
             } catch (Exception e) {
-                webView.loadData(
+                runOnUiThread(() -> webView.loadData(
                         e.toString(),
                         "text/plain",
                         "UTF-8"
-                );
+                ));
             }
         }).start();
 
@@ -140,11 +140,11 @@ public class MainActivity extends AppCompatActivity {
                 }).start();
             } else {
                 // Kein Internet + keine lokalen Dateien
-                webView.loadData(
+                runOnUiThread(() -> webView.loadData(
                         "Keine Internetverbindung und keine lokalen Daten verfügbar. Bitte die App initial mit dem Internet verbinden.",
                         "text/plain",
                         "UTF-8"
-                );
+                ));
             }
         } else if (networkActive && premiumActive) {
             // Wenn Internet da ist, und Premium aktiv ist, alles erneut runterladen
@@ -154,7 +154,7 @@ public class MainActivity extends AppCompatActivity {
             }).start();
         } else {
             // Offline ohne Premium: lade die vorhandene index.html
-            webView.loadUrl("file://" + indexFile.getAbsolutePath());
+            runOnUiThread(() -> webView.loadUrl("file://" + indexFile.getAbsolutePath()));
         }
 
     }
@@ -180,11 +180,11 @@ public class MainActivity extends AppCompatActivity {
             //To Start WebView from local file
             runOnUiThread(() -> webView.loadUrl("file://" + new File(appDir, "index.html").getAbsolutePath()));
         } catch (Exception e) {
-            webView.loadData(
+            runOnUiThread(() -> webView.loadData(
                     e.toString(),
                     "text/plain",
                     "UTF-8"
-            );
+            ));
         }
     }
 
@@ -196,11 +196,11 @@ public class MainActivity extends AppCompatActivity {
 
             if (destFile.getParentFile() != null) {
                if(!destFile.getParentFile().mkdirs()) {
-                   webView.loadData(
+                   runOnUiThread(() -> webView.loadData(
                            "Fehler beim erstellen der Ordnerstruktur.",
                            "text/plain",
                            "UTF-8"
-                   );
+                   ));
                }
             }
 
@@ -214,11 +214,11 @@ public class MainActivity extends AppCompatActivity {
             }
             conn.disconnect();
         } catch (Exception e) {
-            webView.loadData(
+            runOnUiThread(() -> webView.loadData(
                     e.toString(),
                     "text/plain",
                     "UTF-8"
-            );
+            ));
         }
     }
 
