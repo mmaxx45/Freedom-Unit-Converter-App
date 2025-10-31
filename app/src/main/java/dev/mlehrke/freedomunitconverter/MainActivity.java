@@ -113,7 +113,11 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
             } catch (Exception e) {
-                e.printStackTrace();
+                webView.loadData(
+                        e.toString(),
+                        "text/plain",
+                        "UTF-8"
+                );
             }
         }).start();
 
@@ -176,7 +180,11 @@ public class MainActivity extends AppCompatActivity {
             //To Start WebView from local file
             runOnUiThread(() -> webView.loadUrl("file://" + new File(appDir, "index.html").getAbsolutePath()));
         } catch (Exception e) {
-            e.printStackTrace();
+            webView.loadData(
+                    e.toString(),
+                    "text/plain",
+                    "UTF-8"
+            );
         }
     }
 
@@ -205,7 +213,12 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
             conn.disconnect();
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            webView.loadData(
+                    e.toString(),
+                    "text/plain",
+                    "UTF-8"
+            );
         }
     }
 
