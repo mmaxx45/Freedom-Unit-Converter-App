@@ -187,7 +187,13 @@ public class MainActivity extends AppCompatActivity {
             conn.connect();
 
             if (destFile.getParentFile() != null) {
-                destFile.getParentFile().mkdirs();
+               if(!destFile.getParentFile().mkdirs()) {
+                   webView.loadData(
+                           "Fehler beim erstellen der Ordnerstruktur.",
+                           "text/plain",
+                           "UTF-8"
+                   );
+               }
             }
 
             try (InputStream in = conn.getInputStream();
@@ -199,8 +205,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
             conn.disconnect();
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (Exception ignored) {
         }
     }
 
