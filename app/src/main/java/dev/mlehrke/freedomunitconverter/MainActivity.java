@@ -125,16 +125,16 @@ public class MainActivity extends AppCompatActivity {
         
         boolean filesExist = indexFile.exists();
         boolean premiumActive = isPremiumActive();
+        boolean networkActive = isNetworkAvailable();
 
-        if(!filesExist || premiumActive) {
-            if (isNetworkAvailable()) {
+        if (!filesExist) {
+            if(networkActive) {
                 // Wenn Internet da ist, alles runterladen
                 new Thread(() -> {
                     downloadAllFiles(); // lädt Dateien herunter
                     runOnUiThread(() -> webView.loadUrl("file://" + indexFile.getAbsolutePath()));
                 }).start();
-            }
-            else {
+            } else {
                 // Kein Internet + keine lokalen Dateien
                 webView.loadData(
                         "Keine Internetverbindung und keine lokalen Daten verfügbar. Bitte die App initial mit dem Internet verbinden.",
@@ -142,10 +142,17 @@ public class MainActivity extends AppCompatActivity {
                         "UTF-8"
                 );
             }
-        } else  {
-            // Offline: lade die vorhandene index.html
+        } else if (networkActive && premiumActive) {
+            // Wenn Internet da ist, und Premium aktiv ist, alles erneut runterladen
+            new Thread(() -> {
+                downloadAllFiles(); // lädt Dateien herunter
+                runOnUiThread(() -> webView.loadUrl("file://" + indexFile.getAbsolutePath()));
+            }).start();
+        } else {
+            // Offline ohne Premium: lade die vorhandene index.html
             webView.loadUrl("file://" + indexFile.getAbsolutePath());
         }
+
     }
 
     private boolean isPremiumActive() {
