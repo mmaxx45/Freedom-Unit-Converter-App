@@ -197,7 +197,7 @@ public class MainActivity extends AppCompatActivity {
             if (destFile.getParentFile() != null) {
                if(!destFile.getParentFile().mkdirs()) {
                    runOnUiThread(() -> webView.loadData(
-                           "Fehler beim erstellen der Ordnerstruktur.",
+                           "Fehler beim erstellen der Ordnerstruktur oder die Struktur ist bereits vorhanden.",
                            "text/plain",
                            "UTF-8"
                    ));
