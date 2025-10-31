@@ -7,7 +7,7 @@
 
     <application
         android:usesCleartextTraffic="true"
-        android:label="WebApp"
+        android:label="FreedomUnitConverter"
         android:theme="@style/Theme.AppCompat.Light.NoActionBar">
 
         <activity
